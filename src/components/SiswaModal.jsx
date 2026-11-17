@@ -72,10 +72,10 @@ export default function SiswaModal({ isOpen, onClose, onSave, editingSiswa, next
 
     try {
       setSubmitting(true);
-      await onSave(formData, editingSiswa ? editingSiswa.id : null);
+      await onSave(formData, editingSiswa ? editingSiswa.kode_siswa : null);
       onClose();
     } catch (err) {
-      setErrorMsg(err.message || 'Terjadi kesalahan saat menyimpan data');
+      setErrorMsg(err.message || 'Terjadi kesalahan saat menyimpan data ke MySQL');
     } finally {
       setSubmitting(false);
     }
@@ -90,7 +90,7 @@ export default function SiswaModal({ isOpen, onClose, onSave, editingSiswa, next
               {editingSiswa ? '✏️ Edit Data Siswa' : '➕ Tambah Data Siswa'}
             </h2>
             <p className="modal-desc">
-              {editingSiswa ? `Perbarui data untuk ID #${editingSiswa.id}` : 'Isi formulir lengkap untuk menambahkan siswa baru'}
+              {editingSiswa ? `Perbarui data siswa (${editingSiswa.kode_siswa})` : 'Isi formulir lengkap untuk menyimpan siswa ke database'}
             </p>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose}>
@@ -107,7 +107,7 @@ export default function SiswaModal({ isOpen, onClose, onSave, editingSiswa, next
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
             <label className="form-label" htmlFor="kode_siswa">
-              Kode Siswa <span className="text-danger">*</span>
+              Kode Siswa (Primary Key) <span className="text-danger">*</span>
             </label>
             <input
               id="kode_siswa"
@@ -119,7 +119,7 @@ export default function SiswaModal({ isOpen, onClose, onSave, editingSiswa, next
               onChange={handleChange}
               required
             />
-            <small className="form-help">Kode unik pengenal identitas siswa</small>
+            <small className="form-help">Kode unik pengenal identitas siswa di database</small>
           </div>
 
           <div className="form-group">

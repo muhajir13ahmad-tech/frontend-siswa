@@ -1,7 +1,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/siswa';
 
 /**
- * Mengambil semua data siswa, dengan opsional parameter pencarian (search)
+ * Mengambil semua data siswa dari MySQL, mendukung pencarian
  */
 export async function fetchSiswa(search = '') {
   const url = search ? `${API_BASE_URL}?search=${encodeURIComponent(search)}` : API_BASE_URL;
@@ -14,10 +14,10 @@ export async function fetchSiswa(search = '') {
 }
 
 /**
- * Mengambil satu data siswa berdasarkan ID
+ * Mengambil satu data siswa berdasarkan kode_siswa
  */
-export async function fetchSiswaById(id) {
-  const res = await fetch(`${API_BASE_URL}/${id}`);
+export async function fetchSiswaByKode(kode) {
+  const res = await fetch(`${API_BASE_URL}/${encodeURIComponent(kode)}`);
   const data = await res.json();
   if (!res.ok) {
     throw new Error(data.message || 'Gagal mengambil detail siswa');
@@ -26,7 +26,7 @@ export async function fetchSiswaById(id) {
 }
 
 /**
- * Menambahkan data siswa baru
+ * Menambahkan data siswa baru ke tabel siswa
  */
 export async function createSiswa(payload) {
   const res = await fetch(API_BASE_URL, {
@@ -44,10 +44,10 @@ export async function createSiswa(payload) {
 }
 
 /**
- * Memperbarui data siswa berdasarkan ID
+ * Memperbarui data siswa berdasarkan kode_siswa
  */
-export async function updateSiswa(id, payload) {
-  const res = await fetch(`${API_BASE_URL}/${id}`, {
+export async function updateSiswa(kode, payload) {
+  const res = await fetch(`${API_BASE_URL}/${encodeURIComponent(kode)}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json'
@@ -62,10 +62,10 @@ export async function updateSiswa(id, payload) {
 }
 
 /**
- * Menghapus data siswa berdasarkan ID
+ * Menghapus data siswa berdasarkan kode_siswa
  */
-export async function deleteSiswa(id) {
-  const res = await fetch(`${API_BASE_URL}/${id}`, {
+export async function deleteSiswa(kode) {
+  const res = await fetch(`${API_BASE_URL}/${encodeURIComponent(kode)}`, {
     method: 'DELETE'
   });
   const data = await res.json();

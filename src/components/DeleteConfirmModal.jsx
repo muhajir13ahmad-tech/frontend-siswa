@@ -9,7 +9,7 @@ export default function DeleteConfirmModal({ isOpen, onClose, onConfirm, siswa }
   const handleConfirm = async () => {
     try {
       setDeleting(true);
-      await onConfirm(siswa.id);
+      await onConfirm(siswa.kode_siswa);
       onClose();
     } catch (err) {
       console.error(err);
@@ -37,7 +37,7 @@ export default function DeleteConfirmModal({ isOpen, onClose, onConfirm, siswa }
             <br />
             <strong>{siswa.nama_siswa}</strong> ({siswa.kode_siswa})?
             <br />
-            <span className="text-muted small">Tindakan ini tidak dapat dibatalkan.</span>
+            <span className="text-muted small">Data akan dihapus permanen dari MySQL.</span>
           </p>
         </div>
 

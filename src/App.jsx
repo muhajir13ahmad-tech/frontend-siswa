@@ -96,7 +96,7 @@ function App() {
     loadData();
   }, [loadData]);
 
-  // Handle Search Input (bisa debounced / enter / live)
+  // Handle Search Input
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -106,10 +106,10 @@ function App() {
     return siswaList.filter((s) => {
       const matchSearch =
         searchTerm === '' ||
-        s.kode_siswa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.nama_siswa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.alamat_siswa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.jurusan_siswa.toLowerCase().includes(searchTerm.toLowerCase());
+        (s.kode_siswa && s.kode_siswa.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (s.nama_siswa && s.nama_siswa.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (s.alamat_siswa && s.alamat_siswa.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (s.jurusan_siswa && s.jurusan_siswa.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchJurusan =
         selectedJurusan === 'ALL' || s.jurusan_siswa === selectedJurusan;
@@ -129,6 +129,7 @@ function App() {
     if (siswaList.length === 0) return 'SIS-001';
     let maxNum = 0;
     siswaList.forEach((s) => {
+      if (!s.kode_siswa) return;
       const match = s.kode_siswa.match(/(\d+)/);
       if (match) {
         const num = parseInt(match[0], 10);
@@ -152,17 +153,19 @@ function App() {
   };
 
   // Simpan Siswa (Create / Update)
-  const handleSaveSiswa = async (formData, id) => {
-    if (id) {
+  const handleSaveSiswa = async (formData, currentKode) => {
+    if (currentKode) {
       // Update
-      const updated = await updateSiswa(id, formData);
-      setSiswaList((prev) => prev.map((s) => (s.id === id ? updated : s)));
-      showToast(`Data "${updated.nama_siswa}" berhasil diperbarui!`, 'success');
+      const updated = await updateSiswa(currentKode, formData);
+      setSiswaList((prev) =>
+        prev.map((s) => (s.kode_siswa === currentKode ? updated : s))
+      );
+      showToast(`Data "${updated.nama_siswa}" berhasil diperbarui di MySQL!`, 'success');
     } else {
       // Create
       const created = await createSiswa(formData);
       setSiswaList((prev) => [created, ...prev]);
-      showToast(`Siswa "${created.nama_siswa}" (${created.kode_siswa}) berhasil ditambahkan!`, 'success');
+      showToast(`Siswa "${created.nama_siswa}" (${created.kode_siswa}) berhasil ditambahkan ke database!`, 'success');
     }
   };
 
@@ -173,11 +176,11 @@ function App() {
   };
 
   // Konfirmasi Delete
-  const handleConfirmDelete = async (id) => {
+  const handleConfirmDelete = async (kode) => {
     try {
-      await deleteSiswa(id);
-      setSiswaList((prev) => prev.filter((s) => s.id !== id));
-      showToast('Data siswa berhasil dihapus!', 'success');
+      await deleteSiswa(kode);
+      setSiswaList((prev) => prev.filter((s) => s.kode_siswa !== kode));
+      showToast('Data siswa berhasil dihapus dari database MySQL!', 'success');
     } catch (err) {
       showToast(err.message || 'Gagal menghapus siswa', 'error');
       throw err;
@@ -251,12 +254,12 @@ function App() {
           </div>
         </section>
 
-        {/* Error Alert jika backend mati */}
+        {/* Error Alert jika backend gagal konek ke MySQL */}
         {error && (
           <div className="alert-box alert-danger">
             <strong>Koneksi Bermasalah:</strong> {error}
             <div className="mt-1">
-              Pastikan backend Express berjalan di <code>http://localhost:5000</code>.
+              Pastikan backend Express berjalan di <code>http://localhost:5000</code> dan service MySQL (Laragon/XAMPP) menyala di port <code>3306</code>.
             </div>
           </div>
         )}
@@ -265,7 +268,7 @@ function App() {
         <section className="table-card">
           <div className="table-card-header">
             <div className="table-title-group">
-              <h2 className="table-title">Daftar Data Siswa</h2>
+              <h2 className="table-title">Daftar Data Siswa (MySQL: db_siswa)</h2>
               <span className="table-count-badge">
                 Menampilkan {filteredSiswa.length} dari {siswaList.length} siswa
               </span>
@@ -291,7 +294,7 @@ function App() {
                     <td colSpan="7" className="text-center py-8">
                       <div className="loading-state">
                         <div className="spinner"></div>
-                        <p>Memuat data siswa dari database...</p>
+                        <p>Memuat data siswa dari MySQL...</p>
                       </div>
                     </td>
                   </tr>
@@ -304,7 +307,7 @@ function App() {
                         <p>
                           {searchTerm || selectedJurusan !== 'ALL'
                             ? 'Tidak ditemukan siswa dengan kata kunci / filter yang dipilih.'
-                            : 'Belum ada data siswa tersimpan. Silakan klik "Tambah Siswa Baru".'}
+                            : 'Belum ada data siswa tersimpan di tabel MySQL. Silakan klik "Tambah Siswa Baru".'}
                         </p>
                         {searchTerm && (
                           <button
@@ -323,7 +326,7 @@ function App() {
                   </tr>
                 ) : (
                   filteredSiswa.map((siswa, index) => (
-                    <tr key={siswa.id} className="table-row">
+                    <tr key={siswa.kode_siswa} className="table-row">
                       <td className="text-muted font-medium">{index + 1}</td>
                       <td>
                         <span className="badge-kode">{siswa.kode_siswa}</span>
@@ -401,7 +404,7 @@ function App() {
           Ujian Praktik Keahlian: <strong>Pengembangan Web dengan Node.js dan React</strong>
         </p>
         <p className="footer-sub">
-          FullStack Web Developer &copy; {new Date().getFullYear()} — Backend (Express.js) & Frontend (React.js)
+          FullStack Web Developer &copy; {new Date().getFullYear()} — Backend (Express.js) & MySQL (db_siswa) & Frontend (React.js)
         </p>
       </footer>
     </div>
